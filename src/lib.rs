@@ -1,10 +1,18 @@
 use std::{env, fs};
 pub mod cfg {
     use super::*;
+
     #[derive(Debug)]
     pub struct Cfg {
         pub teamid: String,
         pub token: String,
+        pub arg: (Mode, String),
+    }
+
+    #[derive(Debug)]
+    pub enum Mode {
+        TimeGet,
+        TimeTrack,
     }
 
     impl FromIterator<(String, String)> for Cfg {
@@ -12,11 +20,14 @@ pub mod cfg {
             let mut cfg = Cfg {
                 teamid: String::new(),
                 token: String::new(),
+                arg: (Mode::TimeGet, String::new()),
             };
             for (key, value) in iter {
                 match key.as_str() {
                     "teamid" => cfg.teamid = value,
                     "cu_auth" => cfg.token = value,
+                    "timeget" => cfg.arg = (Mode::TimeGet, value),
+                    "timetrack" => cfg.arg = (Mode::TimeTrack, value),
                     _ => panic!("Invalid key in config file!"),
                 }
             }
@@ -24,12 +35,7 @@ pub mod cfg {
         }
     }
 
-    fn get_args() -> Vec<String> {
-        let args: Vec<String> = std::env::args().collect();
-        args
-    }
-
-    pub fn parse_cfg() -> Cfg {
+    fn parse_cfg() -> Vec<(String, String)> {
         let home = env::var("HOME").expect("Could not get $HOME env var; expose it first!");
         let cfg_str = fs::read_to_string(format!("{}/.config/cupcli/cfg", home)).expect(
             r#"
@@ -41,7 +47,7 @@ pub mod cfg {
             ---------------------------------------------------------------------------
             "#,
         );
-        let cfg: Cfg = cfg_str
+        let cfg: Vec<(String, String)> = cfg_str
             .lines()
             .map(|line| {
                 let mut split = line.split("=");
@@ -51,18 +57,42 @@ pub mod cfg {
             })
             .collect();
 
-        dbg!(&cfg);
         cfg
     }
 
-    pub fn parse_args() {
-        let mut args = get_args();
-        if args.len() != 2 {
-            panic!("Cupcli expects exactly one argument!")
+    fn parse_args() -> (String, String) {
+        let args: Vec<String> = env::args().skip(1).collect();
+        if args.len() < 2 {
+            panic!("Cupcli expects at least one argument one value!")
         }
-        match args.pop().unwrap().to_lowercase().as_str() {
-            "workspace" => println!("workspace"),
-            _ => print!("yo"),
+        let mut args_out = (String::new(), String::new());
+        for (idx, arg) in args.iter().enumerate() {
+            if idx == 0 {
+                match arg.as_str() {
+                    "timeget" => args_out.0 = arg.to_string(),
+                    "timetrack" => args_out.0 = arg.to_string(),
+                    _ => panic!(
+                        "Invalid argument! Only 'timeget <today|week>' and 'timetrack <taskid>' are valid arguments!"
+                    ),
+                }
+            } else {
+                match (args_out.0.as_str(), arg.as_str()) {
+                    ("timeget", "today") => args_out.1 = arg.to_string(),
+                    ("timeget", "week") => args_out.1 = arg.to_string(),
+                    ("timeget", _) => panic!(
+                        "Invalid value for argument 'timeget'. Only 'today' and 'week' are valid!"
+                    ),
+                    ("timetrack", _) => todo!(),
+                    (_, _) => panic!("Invalid argument!"),
+                }
+            }
         }
+        args_out
+    }
+
+    pub fn build_cfg() -> Cfg {
+        let mut cfg = parse_cfg();
+        cfg.push(parse_args());
+        cfg.into_iter().collect()
     }
 }
