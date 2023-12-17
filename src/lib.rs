@@ -17,6 +17,7 @@ pub mod cfg {
 
     impl FromIterator<(String, String)> for Cfg {
         fn from_iter<I: IntoIterator<Item = (String, String)>>(iter: I) -> Self {
+            /* needs fix - currently config gets parsed even if teamid and cu_auth are empty in cfg file */
             let mut cfg = Cfg {
                 teamid: String::new(),
                 token: String::new(),
@@ -28,7 +29,7 @@ pub mod cfg {
                     "cu_auth" => cfg.token = value,
                     "timeget" => cfg.arg = (Mode::TimeGet, value),
                     "timetrack" => cfg.arg = (Mode::TimeTrack, value),
-                    _ => panic!("Invalid key in config file!"),
+                    _ => panic!("Could not parse config. Check config file and arguments!"),
                 }
             }
             cfg
@@ -72,7 +73,7 @@ pub mod cfg {
                     "timeget" => args_out.0 = arg.to_string(),
                     "timetrack" => args_out.0 = arg.to_string(),
                     _ => panic!(
-                        "Invalid argument! Only 'timeget <today|week>' and 'timetrack <taskid>' are valid arguments!"
+                        "Invalid argument! Only timeget <'today'|'week'> and timetrack <taskid> are valid arguments!"
                     ),
                 }
             } else {
