@@ -97,3 +97,43 @@ pub mod cfg {
         cfg.into_iter().collect()
     }
 }
+
+pub mod api {
+    use crate::cfg::build_cfg;
+    use chrono::Local;
+    use reqwest::blocking::Client;
+    use reqwest::Method;
+
+    enum MyError {
+        SerdeErr(serde_json::Error),
+        ReqwestErr(reqwest::Error),
+    }
+    pub fn get_time() -> Result<String, MyError> {
+        let cfg = build_cfg();
+        let url = format!(
+            "https://api.clickup.com/api/v2/team/{}/time_entries",
+            cfg.teamid
+        );
+        let mut query_params: Vec<(String, String)> = Vec::new();
+        let client = Client::new();
+        let req = client
+            .request(Method::GET, url)
+            .header("content-type", "application/json")
+            .header("Authorization", cfg.token);
+        match cfg.arg.1.as_str() {
+            "today" => {
+                let local = Local::now().date_naive();
+                let start = local.and_hms_opt(0, 0, 1).unwrap().timestamp();
+                let end = local.and_hms_opt(23, 59, 59).unwrap().timestamp();
+                query_params.push(("start_date".to_string(), format!("{}", start)));
+                query_params.push(("end_date".to_string(), format!("{}", end)));
+                let test = req.query(&query_params).send()?;
+                Ok(req.query(&query_params).send()?.text())
+            }
+            "week" => {
+                todo!()
+            }
+            _ => todo!(),
+        };
+    }
+}

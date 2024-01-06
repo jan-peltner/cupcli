@@ -1,5 +1,4 @@
-use cupcli::cfg::build_cfg;
+use cupcli::api::get_time;
 fn main() {
-    let cfg = build_cfg();
-    dbg!(&cfg);
+    get_time();
 }
