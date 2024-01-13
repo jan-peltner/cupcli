@@ -104,11 +104,7 @@ pub mod api {
     use reqwest::blocking::Client;
     use reqwest::Method;
 
-    enum MyError {
-        SerdeErr(serde_json::Error),
-        ReqwestErr(reqwest::Error),
-    }
-    pub fn get_time() -> Result<String, MyError> {
+    pub fn get_time() -> Result<String, reqwest::Error> {
         let cfg = build_cfg();
         let url = format!(
             "https://api.clickup.com/api/v2/team/{}/time_entries",
@@ -123,17 +119,17 @@ pub mod api {
         match cfg.arg.1.as_str() {
             "today" => {
                 let local = Local::now().date_naive();
-                let start = local.and_hms_opt(0, 0, 1).unwrap().timestamp();
-                let end = local.and_hms_opt(23, 59, 59).unwrap().timestamp();
+                let start = local.and_hms_opt(0, 0, 1).unwrap().timestamp_millis();
+                let curr: i64 = Local::now().timestamp_millis(); 
                 query_params.push(("start_date".to_string(), format!("{}", start)));
-                query_params.push(("end_date".to_string(), format!("{}", end)));
-                let test = req.query(&query_params).send()?;
-                Ok(req.query(&query_params).send()?.text())
+                query_params.push(("end_date".to_string(), format!("{}", curr)));
+                dbg!(&query_params);
+                req.query(&query_params).send()?.text()
             }
             "week" => {
                 todo!()
             }
             _ => todo!(),
-        };
+        }
     }
 }
