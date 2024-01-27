@@ -140,8 +140,8 @@ pub mod request {
 
                 let res = req.query(&query_params).send()?.text()?;
                 let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
-
-                todo!()
+                let tracked_time = calculate_time(time_entries);
+                Ok(format!("Tracked time today: {:.2}h", tracked_time))
             }
             "week" => {
                 todo!()
@@ -149,6 +149,11 @@ pub mod request {
             _ => todo!(),
         }
     }
-
+    fn calculate_time(mut entries: TimeEntries) -> f32 {
+        // calculate tracked time in hours
+        entries.data.iter_mut().map(|entry| {
+            entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32
+        }).sum()
+    }
 }
 
