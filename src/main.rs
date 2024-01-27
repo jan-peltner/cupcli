@@ -1,4 +1,4 @@
-use cupcli::api::get_time;
+use cupcli::request::get_time;
 fn main() {
     dbg!(get_time());
 }

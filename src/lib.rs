@@ -1,5 +1,5 @@
 use std::{env, fs};
-pub mod cfg {
+pub mod config {
     use super::*;
 
     #[derive(Debug)]
@@ -98,8 +98,8 @@ pub mod cfg {
     }
 }
 
-pub mod api {
-    use crate::cfg::build_cfg;
+pub mod request {
+    use crate::config::build_cfg;
     use chrono::Local;
     use reqwest::blocking::Client;
     use reqwest::Method;
@@ -134,12 +134,13 @@ pub mod api {
                 let local = Local::now().date_naive();
                 let start = local.and_hms_opt(0, 0, 1).unwrap().timestamp_millis();
                 let curr: i64 = Local::now().timestamp_millis(); 
+
                 query_params.push(("start_date".to_string(), format!("{}", start)));
                 query_params.push(("end_date".to_string(), format!("{}", curr)));
+
                 let res = req.query(&query_params).send()?.text()?;
-                dbg!(&res);
                 let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
-                dbg!(&time_entries);
+
                 todo!()
             }
             "week" => {
