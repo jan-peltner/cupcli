@@ -103,6 +103,19 @@ pub mod api {
     use chrono::Local;
     use reqwest::blocking::Client;
     use reqwest::Method;
+    use serde::Deserialize;
+
+    #[derive(Debug, Deserialize)]
+    struct TimeEntries {
+        data: Vec<TimeEntry>,
+    }
+    #[derive(Debug, Deserialize)]
+    struct TimeEntry {
+        id: String,
+        start: String,
+        end: String,
+        duration: String,
+    }
 
     pub fn get_time() -> Result<String, reqwest::Error> {
         let cfg = build_cfg();
@@ -123,8 +136,11 @@ pub mod api {
                 let curr: i64 = Local::now().timestamp_millis(); 
                 query_params.push(("start_date".to_string(), format!("{}", start)));
                 query_params.push(("end_date".to_string(), format!("{}", curr)));
-                dbg!(&query_params);
-                req.query(&query_params).send()?.text()
+                let res = req.query(&query_params).send()?.text()?;
+                dbg!(&res);
+                let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
+                dbg!(&time_entries);
+                todo!()
             }
             "week" => {
                 todo!()
@@ -132,4 +148,6 @@ pub mod api {
             _ => todo!(),
         }
     }
+
 }
+
