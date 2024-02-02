@@ -7,6 +7,7 @@ pub mod config {
         pub teamid: String,
         pub token: String,
         pub arg: (Mode, String),
+        pub daily_quota: f32,
     }
 
     #[derive(Debug)]
@@ -22,6 +23,7 @@ pub mod config {
                 teamid: String::new(),
                 token: String::new(),
                 arg: (Mode::TimeGet, String::new()),
+                daily_quota: 8.0,
             };
             for (key, value) in iter {
                 match key.as_str() {
@@ -29,6 +31,7 @@ pub mod config {
                     "cu_auth" => cfg.token = value,
                     "timeget" => cfg.arg = (Mode::TimeGet, value),
                     "timetrack" => cfg.arg = (Mode::TimeTrack, value),
+                    "dailyQuota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
                     _ => panic!("Could not parse config. Check config file and arguments!"),
                 }
             }
@@ -100,8 +103,8 @@ pub mod config {
 
 pub mod request {
     use crate::config::build_cfg;
-    use chrono::Local;
-    use reqwest::blocking::Client;
+    use chrono::{Local, Datelike, Days};
+    use reqwest::blocking::{Client, RequestBuilder};
     use reqwest::Method;
     use serde::Deserialize;
 
@@ -123,7 +126,6 @@ pub mod request {
             "https://api.clickup.com/api/v2/team/{}/time_entries",
             cfg.teamid
         );
-        let mut query_params: Vec<(String, String)> = Vec::new();
         let client = Client::new();
         let req = client
             .request(Method::GET, url)
@@ -134,21 +136,43 @@ pub mod request {
                 let local = Local::now().date_naive();
                 let start = local.and_hms_opt(0, 0, 1).unwrap().timestamp_millis();
                 let curr: i64 = Local::now().timestamp_millis(); 
-
-                query_params.push(("start_date".to_string(), format!("{}", start)));
-                query_params.push(("end_date".to_string(), format!("{}", curr)));
-
-                let res = req.query(&query_params).send()?.text()?;
-                let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
-                let tracked_time = calculate_time(time_entries);
-                Ok(format!("Tracked time today: {:.2}h", tracked_time))
+                let res = make_request(req, start, curr);
+                match res {
+                    Ok(res) => Ok(format!("Tracked time today {} out of {}", format_time(res), format_time(cfg.daily_quota * 5f32))),
+                    Err(e) => Err(e),
+                }
             }
             "week" => {
-                todo!()
+                let now = Local::now();
+                let closest_past_monday = now.checked_sub_days(Days::new(now.weekday().num_days_from_monday().into())).unwrap();
+                let start = closest_past_monday.date_naive().and_hms_opt(0, 0, 1).unwrap().timestamp_millis();
+                let curr = now.timestamp_millis();
+                let res = make_request(req, start, curr);
+                match res {
+                    Ok(res) => Ok(format!("Tracked time this week: {} out of {}", format_time(res), format_time(cfg.daily_quota * 5f32))),
+                    Err(e) => Err(e),
+                }
             }
             _ => todo!(),
         }
     }
+    fn make_request(req: RequestBuilder, start: i64, end: i64) -> Result<f32, reqwest::Error> {
+        let mut query_params: Vec<(String, String)> = Vec::new();
+        query_params.push(("start_date".to_string(), format!("{}", start)));
+        query_params.push(("end_date".to_string(), format!("{}", end)));
+        let res = req.query(&query_params).send()?.text()?;
+        let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
+        Ok(calculate_time(time_entries))
+    }
+
+    fn format_time(time: f32) -> String {
+        if time.fract() == 0.0 {
+            format!("{:.0}h", time)
+        } else {
+            format!("{:.2}h", time)
+        }
+    }
+
     fn calculate_time(mut entries: TimeEntries) -> f32 {
         // calculate tracked time in hours
         entries.data.iter_mut().map(|entry| {
