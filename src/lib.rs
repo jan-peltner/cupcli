@@ -138,7 +138,7 @@ pub mod request {
                 let curr: i64 = Local::now().timestamp_millis(); 
                 let res = make_request(req, start, curr);
                 match res {
-                    Ok(res) => Ok(format!("Tracked time today: {} out of {}", format_time(res), format_time(cfg.daily_quota))),
+                    Ok(res) => Ok(format!("Tracked time today: {} out of {}", fmt_time(res), fmt_time(cfg.daily_quota))),
                     Err(e) => Err(e),
                 }
             }
@@ -149,7 +149,7 @@ pub mod request {
                 let curr = now.timestamp_millis();
                 let res = make_request(req, start, curr);
                 match res {
-                    Ok(res) => Ok(format!("Tracked time this week: {} out of {}", format_time(res), format_time(cfg.daily_quota * 5f32))),
+                    Ok(res) => Ok(format!("Tracked time this week: {} out of {}", fmt_time(res), fmt_time(cfg.daily_quota * 5f32))),
                     Err(e) => Err(e),
                 }
             }
@@ -165,7 +165,7 @@ pub mod request {
         Ok(calculate_time(time_entries))
     }
 
-    fn format_time(time: f32) -> String {
+    fn fmt_time(time: f32) -> String {
         if time.fract() == 0.0 {
             format!("{:.0}h", time)
         } else {
