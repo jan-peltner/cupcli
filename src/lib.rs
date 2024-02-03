@@ -4,8 +4,11 @@ pub mod config {
 
     #[derive(Debug)]
     pub struct Cfg {
-        pub teamid: String,
         pub token: String,
+        pub team_id: String,
+        pub space_id: String,
+        pub folder_id: String,
+        pub list_id: String,
         pub arg: (Mode, String),
         pub daily_quota: f32,
     }
@@ -18,21 +21,26 @@ pub mod config {
 
     impl FromIterator<(String, String)> for Cfg {
         fn from_iter<I: IntoIterator<Item = (String, String)>>(iter: I) -> Self {
-            /* needs fix - currently config gets parsed even if teamid and cu_auth are empty in cfg file */
             let mut cfg = Cfg {
-                teamid: String::new(),
                 token: String::new(),
+                team_id: String::new(),
+                space_id: String::new(),
+                folder_id: String::new(),
+                list_id: String::new(),
                 arg: (Mode::TimeGet, String::new()),
                 daily_quota: 8.0,
             };
             for (key, value) in iter {
                 match key.as_str() {
-                    "teamid" => cfg.teamid = value,
                     "cu_auth" => cfg.token = value,
+                    "teamid" => cfg.team_id = value,
+                    "spaceid" => cfg.space_id = value,
+                    "folderid" => cfg.folder_id = value,
+                    "listid" => cfg.list_id = value,
                     "dailyQuota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
                     "timeget" => cfg.arg = (Mode::TimeGet, value),
                     "timetrack" => cfg.arg = (Mode::TimeTrack, value),
-                    _ => panic!("Could not parse config. Check config file and arguments!"),
+                    _ => println!("[WARNING] Ignoring unknown key in cfg `{}`", key)
                 }
             }
             cfg
@@ -97,7 +105,11 @@ pub mod config {
     pub fn build_cfg() -> Cfg {
         let mut cfg = parse_cfg();
         cfg.push(parse_args());
-        cfg.into_iter().collect()
+        let cfg: Cfg = cfg.into_iter().collect();
+        if cfg.token.is_empty() || cfg.team_id.is_empty() {
+            panic!("cu_auth and teamid must be set in the config file!");
+        }
+        cfg
     }
 }
 
@@ -124,7 +136,7 @@ pub mod request {
         let cfg = build_cfg();
         let url = format!(
             "https://api.clickup.com/api/v2/team/{}/time_entries",
-            cfg.teamid
+            cfg.team_id
         );
         let client = Client::new();
         let req = client
