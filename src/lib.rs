@@ -29,9 +29,9 @@ pub mod config {
                 match key.as_str() {
                     "teamid" => cfg.teamid = value,
                     "cu_auth" => cfg.token = value,
+                    "dailyQuota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
                     "timeget" => cfg.arg = (Mode::TimeGet, value),
                     "timetrack" => cfg.arg = (Mode::TimeTrack, value),
-                    "dailyQuota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
                     _ => panic!("Could not parse config. Check config file and arguments!"),
                 }
             }
@@ -138,7 +138,7 @@ pub mod request {
                 let curr: i64 = Local::now().timestamp_millis(); 
                 let res = make_request(req, start, curr);
                 match res {
-                    Ok(res) => Ok(format!("Tracked time today {} out of {}", format_time(res), format_time(cfg.daily_quota * 5f32))),
+                    Ok(res) => Ok(format!("Tracked time today: {} out of {}", format_time(res), format_time(cfg.daily_quota))),
                     Err(e) => Err(e),
                 }
             }
