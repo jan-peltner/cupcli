@@ -1,25 +1,11 @@
-use crate::config::{build_cfg, Cfg};
+mod request_utils;
+
+use crate::config::build_cfg;
+use request_utils::{make_request, fmt_time};
 use chrono::{Local, Datelike, Days};
-use reqwest::blocking::Client;
-use reqwest::Method;
-use serde::Deserialize;
 
 
-#[derive(Debug, Deserialize)]
-struct TimeEntries {
-    data: Vec<TimeEntry>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct TimeEntry {
-    id: String,
-    start: String,
-    end: String,
-    duration: String,
-}
-
-pub fn get_time() -> Result<String, reqwest::Error> {
+pub fn time_get() -> Result<String, reqwest::Error> {
     let cfg = build_cfg();
     match cfg.arg.1.as_str() {
         "today" => {
@@ -47,38 +33,28 @@ pub fn get_time() -> Result<String, reqwest::Error> {
     }
 }
 
-fn make_request(cfg: &Cfg, start: i64, end: i64) -> Result<f32, reqwest::Error> {
-    // building request 
-    let url = format!(
-        "https://api.clickup.com/api/v2/team/{}/time_entries",
-        cfg.team_id
-    );
-    let client = Client::new();
-    let req = client
-        .request(Method::GET, url)
-        .header("content-type", "appication/json")
-        .header("Authorization", cfg.token.clone());
 
-    // adding query params to request
-    let mut query_params: Vec<(String, String)> = Vec::new();
-    query_params.push(("start_date".to_string(), format!("{}", start)));
-    query_params.push(("end_date".to_string(), format!("{}", end)));
-    let res = req.query(&query_params).send()?.text()?;
-    let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
-    Ok(calculate_time(time_entries))
+#[allow(dead_code)]
+pub fn time_track() -> Result<(), reqwest::Error> {
+    todo!()
 }
 
-fn fmt_time(time: f32) -> String {
-    if time.fract() == 0.0 {
-        format!("{:.0}h", time)
-    } else {
-        format!("{:.2}h", time)
-    }
+#[allow(dead_code)]
+pub fn tasks_list() -> Result<(), reqwest::Error> {
+    todo!()
 }
 
-fn calculate_time(mut entries: TimeEntries) -> f32 {
-    // calculate tracked time in hours
-    entries.data.iter_mut().map(|entry| {
-        entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32
-    }).sum()
+#[allow(dead_code)]
+pub fn task_set_status() -> Result<(), reqwest::Error> {
+    todo!()
 }
+
+#[allow(dead_code)]
+pub fn task_create_comment() -> Result<(), reqwest::Error> {
+    todo!()
+}
+
+
+
+
+

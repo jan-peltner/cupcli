@@ -1,9 +1,9 @@
 mod request;
 mod config;
-use request::get_time;
+use request::time_get;
 
 fn main() {
-    match get_time() {
+    match time_get() {
         Ok(time) => println!("{}", time),
         Err(e) => println!("{}", e),
     }
