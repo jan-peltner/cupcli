@@ -1,4 +1,7 @@
-use cupcli::request::get_time;
+mod request;
+mod config;
+use request::get_time;
+
 fn main() {
     match get_time() {
         Ok(time) => println!("{}", time),
