@@ -1,7 +1,7 @@
-mod request_utils;
+mod utils;
 
 use crate::config::build_cfg;
-use request_utils::{make_request, fmt_time};
+use crate::request::utils::{make_request, fmt_time};
 use chrono::{Local, Datelike, Days};
 
 

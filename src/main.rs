@@ -1,6 +1,6 @@
 mod request;
 mod config;
-use request::time_get;
+use crate::request::time_get;
 
 fn main() {
     match time_get() {
