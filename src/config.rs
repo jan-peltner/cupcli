@@ -6,8 +6,8 @@ pub struct Cfg {
     pub space_id: String,
     pub folder_id: String,
     pub list_id: String,
-    pub arg: (Mode, String),
     pub daily_quota: f32,
+    pub arg: (Mode, String),
 }
 
 #[derive(Debug)]
@@ -88,6 +88,7 @@ fn parse_args() -> (String, String) {
             match (args_out.0.as_str(), arg.as_str()) {
                 ("timeget", "today") => args_out.1 = arg.to_string(),
                 ("timeget", "week") => args_out.1 = arg.to_string(),
+                ("timeget", "yesterday") => args_out.1 = arg.to_string(),
                 ("timeget", _) => panic!(
                     "Invalid value for argument 'timeget'. Only 'today' and 'week' are valid!"
                 ),

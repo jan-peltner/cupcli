@@ -29,10 +29,20 @@ pub fn time_get() -> Result<String, reqwest::Error> {
                 Err(e) => Err(e),
             }
         }
+        "yesterday" => {
+            let now = Local::now();
+            let yesterday = now.checked_sub_days(Days::new(1)).unwrap();
+            let start = yesterday.date_naive().and_hms_opt(0, 0, 1).unwrap().timestamp_millis();
+            let end = yesterday.date_naive().and_hms_opt(23, 59, 59).unwrap().timestamp_millis();
+            let res = make_request(&cfg, start, end);
+            match res {
+                Ok(res) => Ok(format!("Tracked time yesterday: {} out of {}", fmt_time(res), fmt_time(cfg.daily_quota))),
+                Err(e) => Err(e),
+            }
+        }
         _ => todo!(),
     }
 }
-
 
 #[allow(dead_code)]
 pub fn time_track() -> Result<(), reqwest::Error> {
