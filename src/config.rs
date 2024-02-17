@@ -8,13 +8,6 @@ pub struct Cfg {
     pub folder_id: String,
     pub list_id: String,
     pub daily_quota: f32,
-    pub arg: (Mode, String),
-}
-
-#[derive(Debug)]
-pub enum Mode {
-    TimeGet,
-    TimeTrack,
 }
 
 impl FromIterator<(String, String)> for Cfg {
@@ -25,7 +18,6 @@ impl FromIterator<(String, String)> for Cfg {
             space_id: String::new(),
             folder_id: String::new(),
             list_id: String::new(),
-            arg: (Mode::TimeGet, String::new()),
             daily_quota: 8.0,
         };
         for (key, value) in iter {
