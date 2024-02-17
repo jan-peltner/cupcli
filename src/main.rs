@@ -8,7 +8,7 @@ use crate::api::{time_get, task_get};
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.len() != 2 {
-        panic!("Cupcli expects at least two arguments!")
+        panic!("Cupcli expects exactly two arguments!")
     }
     let res = match args[0].as_str() {
         "timeget" => {
@@ -16,7 +16,7 @@ fn main() {
             if valid_args.contains(&args[1].as_str()) {
                 time_get(&args[1])
             } else {
-                panic!("Invalid value for argument 'timeget'. Only 'today', 'week', and 'yesterday' are valid!")
+                panic!("Invalid second argument for first argument 'timeget'. Only 'today', 'week', and 'yesterday' are valid!")
             }
         }
         "taskget" => {
@@ -24,7 +24,7 @@ fn main() {
             if valid_args.contains(&args[1].as_str()) {
                 task_get(&args[1])
             } else {
-                panic!("Invalid value for argument 'taskget'. Only 'last' is valid!")
+                panic!("Invalid second argument for first argument 'taskget'. Only 'last' is valid!")
             }
 
         }
