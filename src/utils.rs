@@ -57,11 +57,11 @@ pub mod display {
     use chrono::Utc;
     
     use super::TimeEntry;
-    pub fn fmt_time(time: f32) -> String {
-        if time.fract() == 0.0 {
-            format!("{:.0}h", time)
+    pub fn fmt_time(hours: f32) -> String {
+        if hours.fract() == 0.0 {
+            format!("{:.0}h", hours)
         } else {
-            format!("{:.2}h", time)
+            format!("{:.2}h", hours)
         }
     }
     pub fn fmt_task(entry: &TimeEntry) -> String {
@@ -80,8 +80,8 @@ pub mod display {
             out.push_str("No task associated with this entry\n");
         }
 
-        out.push_str(&format!("[START] Tracked {} minutes ago\n", last_tracked_in_mins)); 
-        out.push_str(&format!("[DURATION] {} minutes\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32));
+        out.push_str(&format!("[START] {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32))); 
+        out.push_str(&format!("[DURATION] {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
         out
     }
 }
