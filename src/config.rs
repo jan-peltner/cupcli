@@ -1,4 +1,5 @@
 use std::{env, fs};
+
 #[derive(Debug)]
 pub struct Cfg {
     pub token: String,
@@ -35,8 +36,6 @@ impl FromIterator<(String, String)> for Cfg {
                 "folderid" => cfg.folder_id = value,
                 "listid" => cfg.list_id = value,
                 "dailyQuota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
-                "timeget" => cfg.arg = (Mode::TimeGet, value),
-                "timetrack" => cfg.arg = (Mode::TimeTrack, value),
                 _ => println!("[WARNING] Ignoring unknown key in cfg `{}`", key)
             }
         }
@@ -69,40 +68,8 @@ fn parse_cfg() -> Vec<(String, String)> {
     cfg
 }
 
-fn parse_args() -> (String, String) {
-    let args: Vec<String> = env::args().skip(1).collect();
-    if args.len() < 2 {
-        panic!("Cupcli expects at least one argument one value!")
-    }
-    let mut args_out = (String::new(), String::new());
-    for (idx, arg) in args.iter().enumerate() {
-        if idx == 0 {
-            match arg.as_str() {
-                "timeget" => args_out.0 = arg.to_string(),
-                "timetrack" => args_out.0 = arg.to_string(),
-                _ => panic!(
-                    "Invalid argument! Only timeget <'today'|'week'> and timetrack <taskid> are valid arguments!"
-                ),
-            }
-        } else {
-            match (args_out.0.as_str(), arg.as_str()) {
-                ("timeget", "today") => args_out.1 = arg.to_string(),
-                ("timeget", "week") => args_out.1 = arg.to_string(),
-                ("timeget", "yesterday") => args_out.1 = arg.to_string(),
-                ("timeget", _) => panic!(
-                    "Invalid value for argument 'timeget'. Only 'today' and 'week' are valid!"
-                ),
-                ("timetrack", _) => todo!(),
-                (_, _) => panic!("Invalid argument!"),
-            }
-        }
-    }
-    args_out
-}
-
 pub fn build_cfg() -> Cfg {
-    let mut cfg = parse_cfg();
-    cfg.push(parse_args());
+    let cfg = parse_cfg();
     let cfg: Cfg = cfg.into_iter().collect();
     if cfg.token.is_empty() || cfg.team_id.is_empty() {
         panic!("cu_auth and teamid must be set in the config file!");
