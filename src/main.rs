@@ -1,10 +1,14 @@
 mod api;
 mod config;
 mod utils;
+mod args;
 
 use std::env;
 
 use crate::api::{time_get, task_get};
+use crate::args::*;
+
+
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.len() != 2 {
@@ -12,21 +16,24 @@ fn main() {
     }
     let res = match args[0].as_str() {
         "timeget" => {
-            let valid_args = ["today", "week", "yesterday"];
-            if valid_args.contains(&args[1].as_str()) {
-                time_get(&args[1])
-            } else {
-                panic!("Invalid second argument for first argument 'timeget'. Only 'today', 'week', and 'yesterday' are valid!")
-            }
+            let arg: TimeGet = match args[1].as_str() {
+                "today" => TimeGet::Today,
+                "week" => TimeGet::Week,
+                "yesterday" => TimeGet::Yesterday,
+                _ => panic!("Invalid second argument for first argument 'timeget'. Only 'today', 'week', and 'yesterday' are valid!")
+            };
+            time_get(arg)
         }
         "taskget" => {
-            let valid_args = ["last"];
-            if valid_args.contains(&args[1].as_str()) {
-                task_get(&args[1])
-            } else {
-                panic!("Invalid second argument for first argument 'taskget'. Only 'last' is valid!")
-            }
 
+            let arg: TaskGet = match args[1].as_str() {
+                "last" => TaskGet::Last,
+                "sprint" => {
+                    TaskGet::Sprint
+                },
+                _ => panic!("Invalid second argument for first argument 'taskget'. Only 'last' and 'sprint' are valid!")
+            };
+            task_get(arg) 
         }
         "timetrack" => todo!(),
         _ => panic!("Timetrack has not been implemented yet!")
