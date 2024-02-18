@@ -31,7 +31,7 @@ impl FromIterator<(String, String)> for Cfg {
                 "listid" => cfg.list_id = value,
                 "daily_quota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
                 "look_behind" => cfg.look_behind = value.parse::<u64>().unwrap_or(1),
-                _ => println!("[WARNING]: Ignoring unknown key in cfg `{}`", key)
+                _ => println!("[WARNING] Ignoring unknown key in cfg `{}`", key)
             }
         }
         cfg
