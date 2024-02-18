@@ -80,7 +80,7 @@ pub fn task_get(arg: TaskGet) -> Result<String, reqwest::Error> {
                 Err(e) => Err(e),
             }
         },
-        _ => todo!(),
+        TaskGet::Sprint => todo!()
     }
 }
 
