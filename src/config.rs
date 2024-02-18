@@ -8,6 +8,7 @@ pub struct Cfg {
     pub folder_id: String,
     pub list_id: String,
     pub daily_quota: f32,
+    pub look_behind: u64,
 }
 
 impl FromIterator<(String, String)> for Cfg {
@@ -19,6 +20,7 @@ impl FromIterator<(String, String)> for Cfg {
             folder_id: String::new(),
             list_id: String::new(),
             daily_quota: 8.0,
+            look_behind: 1,
         };
         for (key, value) in iter {
             match key.as_str() {
@@ -27,8 +29,9 @@ impl FromIterator<(String, String)> for Cfg {
                 "spaceid" => cfg.space_id = value,
                 "folderid" => cfg.folder_id = value,
                 "listid" => cfg.list_id = value,
-                "dailyQuota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
-                _ => println!("[WARNING] Ignoring unknown key in cfg `{}`", key)
+                "daily_quota" => cfg.daily_quota = value.parse::<f32>().unwrap_or(8.0),
+                "look_behind" => cfg.look_behind = value.parse::<u64>().unwrap_or(1),
+                _ => println!("[WARNING]: Ignoring unknown key in cfg `{}`", key)
             }
         }
         cfg

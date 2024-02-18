@@ -66,7 +66,7 @@ pub fn task_get(arg: &String) -> Result<String, reqwest::Error> {
     let now = Local::now();
     match arg.as_str() {
         "last" => {
-            let start_ndt = now.checked_sub_days(Days::new(1)).unwrap().date_naive().and_hms_opt(0, 0, 1).unwrap();
+            let start_ndt = now.checked_sub_days(Days::new(cfg.look_behind)).unwrap().date_naive().and_hms_opt(0, 0, 1).unwrap();
             let start_ts = start_ndt.timestamp_millis();
             let end = now.timestamp_millis();
             let res = make_request(&cfg, start_ts, end, url);

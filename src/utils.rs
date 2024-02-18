@@ -75,13 +75,16 @@ pub mod display {
         let last_tracked_in_mins = Utc::now().signed_duration_since(start_dt).num_minutes();
 
         if let Some(task) = &entry.task {
-            out.push_str(&format!("[TASK] {} ({})\n", task.name, entry.task_url.as_ref().unwrap()));
+            out.push_str(&format!("{:>>12}", "[TASK]:"));
+            out.push_str(&format!(" {} ({})\n", task.name, entry.task_url.as_ref().unwrap()));
         } else {
             out.push_str("No task associated with this entry\n");
         }
 
-        out.push_str(&format!("[START] {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32))); 
-        out.push_str(&format!("[DURATION] {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
+        out.push_str(&format!("{:>>12}", "[START]:"));
+        out.push_str(&format!(" {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32))); 
+        out.push_str(&format!("{:>>12}", "[DURATION]:"));
+        out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
         out
     }
 }
