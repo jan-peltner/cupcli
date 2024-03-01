@@ -4,6 +4,7 @@ use std::{env, fs};
 pub struct Cfg {
     pub token: String,
     pub team_id: String,
+    pub user_id: String,
     pub space_id: String,
     pub folder_id: String,
     pub list_id: String,
@@ -16,6 +17,7 @@ impl FromIterator<(String, String)> for Cfg {
         let mut cfg = Cfg {
             token: String::new(),
             team_id: String::new(),
+            user_id: String::new(),
             space_id: String::new(),
             folder_id: String::new(),
             list_id: String::new(),
@@ -26,6 +28,7 @@ impl FromIterator<(String, String)> for Cfg {
             match key.as_str() {
                 "cu_auth" => cfg.token = value,
                 "teamid" => cfg.team_id = value,
+                "userid" => cfg.user_id = value,
                 "spaceid" => cfg.space_id = value,
                 "folderid" => cfg.folder_id = value,
                 "listid" => cfg.list_id = value,

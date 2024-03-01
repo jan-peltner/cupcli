@@ -35,7 +35,7 @@ pub fn calculate_time(mut entries: TimeEntries) -> f32 {
     }).sum()
 }
 
-pub mod network {
+pub mod req {
     use super::*;
     use crate::config::Cfg;
     use reqwest::blocking::Client;
@@ -73,12 +73,12 @@ pub mod display {
     pub fn fmt_task(entry: &TimeEntry) -> String {
         let mut out = String::new(); 
 
-        let start_ts_ms = entry.start.parse::<i64>().unwrap();
-        let start_ts_s = start_ts_ms / 1000;
-        let start_ts_ns = (start_ts_ms % 1000) * 1_000_000;
-        let start_dt = DateTime::from_timestamp(start_ts_s, start_ts_ns as u32).unwrap();
+        let last_entry_ts_ms = entry.end.parse::<i64>().unwrap();
+        let last_entry_ts_s = last_entry_ts_ms / 1000;
+        let last_entry_ts_ns = (last_entry_ts_ms % 1000) * 1_000_000;
+        let last_entry_dt = DateTime::from_timestamp(last_entry_ts_s, last_entry_ts_ns as u32).unwrap();
 
-        let last_tracked_in_mins = Utc::now().signed_duration_since(start_dt).num_minutes();
+        let last_tracked_in_mins = Utc::now().signed_duration_since(last_entry_dt).num_minutes();
 
         if let Some(task) = &entry.task {
             out.push_str(&format!("{: <12}", "[TASK]"));
@@ -89,7 +89,7 @@ pub mod display {
             out.push_str("No task associated with this entry\n");
         }
 
-        out.push_str(&format!("{: <12}", "[START]"));
+        out.push_str(&format!("{: <12}", "[LAST ENTRY]"));
         out.push_str(&format!(" {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32))); 
         out.push_str(&format!("{: <12}", "[DURATION]"));
         out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));

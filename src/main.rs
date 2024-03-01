@@ -5,7 +5,7 @@ mod args;
 
 use std::env;
 
-use crate::api::{time_get, task_get};
+use crate::api::{time_get, task_get, time_track};
 use crate::args::*;
 
 
@@ -25,7 +25,6 @@ fn main() {
             time_get(arg)
         }
         "taskget" => {
-
             let arg: TaskGet = match args[1].as_str() {
                 "last" => TaskGet::Last,
                 "sprint" => {
@@ -35,7 +34,13 @@ fn main() {
             };
             task_get(arg) 
         }
-        "timetrack" => todo!(),
+        "timetrack" => {
+            let arg: TimeTrack = match args[1].as_str() {
+                "last" => TimeTrack::Last,
+                _ => TimeTrack::TaskId(&args[1])
+            };
+            time_track(arg)
+        }
         _ => panic!("Timetrack has not been implemented yet!")
     };
     match res {
