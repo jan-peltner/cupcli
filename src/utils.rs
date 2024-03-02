@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -28,9 +29,9 @@ struct Status {
 }
 
 
-pub fn calculate_time(mut entries: TimeEntries) -> f32 {
+pub fn calculate_time(entries: TimeEntries) -> f32 {
     // calculate tracked time in hours
-    entries.data.iter_mut().map(|entry| {
+    entries.data.iter().map(|entry| {
         entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32
     }).sum()
 }
@@ -38,10 +39,11 @@ pub fn calculate_time(mut entries: TimeEntries) -> f32 {
 pub mod req {
     use super::*;
     use crate::config::Cfg;
-    use reqwest::blocking::Client;
+    use reqwest::blocking::{Client, Response};
     use reqwest::Method;
+    use serde_json::{to_string, from_str};
 
-    pub fn make_request(cfg: &Cfg, start: i64, end: i64, url: String) -> Result<TimeEntries, reqwest::Error> { // building request 
+    pub fn make_get_request(cfg: &Cfg, start: i64, end: i64, url: String) -> Result<TimeEntries, reqwest::Error> { // building request 
         let client = Client::new();
         let req = client
             .request(Method::GET, url)
@@ -53,8 +55,23 @@ pub mod req {
         query_params.push(("start_date".to_string(), format!("{}", start)));
         query_params.push(("end_date".to_string(), format!("{}", end)));
         let res = req.query(&query_params).send()?.text()?;
-        let time_entries: TimeEntries = serde_json::from_str(&res).unwrap(); 
+        let time_entries: TimeEntries = from_str(&res).unwrap(); 
         Ok(time_entries)
+    }
+
+    pub fn make_post_request(cfg: &Cfg, url: String, body: HashMap<String, String>) -> Result<(), Box<dyn std::error::Error>> {
+        let client: Client = Client::new();
+        let req_body = to_string(&body)?;
+        let req = client.request(Method::POST , url).header("content-type", "application/json").header("Authorization", cfg.token.clone()).body(req_body.clone());
+
+        let status = req.send()?.status();
+        let success = status.is_success();
+
+        if success {
+            Ok(())
+        } else {
+            Err(format!("Request failed with status code: {}", status.as_u16()).into())
+        }
     }
 }
 
