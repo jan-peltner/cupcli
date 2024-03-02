@@ -36,10 +36,10 @@ pub fn calculate_time(entries: TimeEntries) -> f32 {
     }).sum()
 }
 
-pub mod req {
+pub mod request {
     use super::*;
     use crate::config::Cfg;
-    use reqwest::blocking::{Client, Response};
+    use reqwest::blocking::Client;
     use reqwest::Method;
     use serde_json::{to_string, from_str};
 
@@ -89,7 +89,6 @@ pub mod display {
     }
     pub fn fmt_task(entry: &TimeEntry) -> String {
         let mut out = String::new(); 
-
         let last_entry_ts_ms = entry.end.parse::<i64>().unwrap();
         let last_entry_ts_s = last_entry_ts_ms / 1000;
         let last_entry_ts_ns = (last_entry_ts_ms % 1000) * 1_000_000;

@@ -1,7 +1,7 @@
 use crate::args::*;
 use crate::config::build_cfg;
 use crate::utils::calculate_time;
-use crate::utils::req::make_get_request;
+use crate::utils::request::make_get_request;
 use crate::utils::display::{fmt_time, fmt_task};
 use chrono::{Local, Datelike, Days};
 
@@ -86,10 +86,6 @@ pub fn task_get(arg: TaskGet) -> Result<String, reqwest::Error> {
 
 #[allow(dead_code)]
 pub fn time_track(arg: TimeTrack) -> Result<String, reqwest::Error> {
-    match arg {
-        TimeTrack::Last => todo!(),
-        TimeTrack::TaskId(id) => todo!()
-    }
     todo!()
 }
 
