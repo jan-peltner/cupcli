@@ -58,13 +58,13 @@ fn run() -> Result<(), ArgError> {
     };
     match res {
         Ok(res) => println!("{}", res),
-        Err(e) => println!("An error occurred: {}", e)
+        Err(e) => eprintln!("An error occurred: {}", e)
     };
     Ok(())
 }
+
 fn main() {
-    match run() {
-        Ok(_) => (),
-        Err(e) => eprintln!("{}", e) 
+    if let Err(e) = run() {
+        eprintln!("{}", e)
     }
 }
