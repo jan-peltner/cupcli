@@ -1,12 +1,11 @@
 use crate::args::*;
-use crate::config::build_cfg;
-use crate::utils::calculate_time;
+use crate::config::Cfg;
+use crate::utils::{calculate_time, TimeEntry};
 use crate::utils::request::make_get_request;
 use crate::utils::display::{fmt_time, fmt_task};
 use chrono::{Local, Datelike, Days};
 
-pub fn time_get(arg: TimeGet) -> Result<String, reqwest::Error> {
-    let cfg = build_cfg();
+pub fn time_get(arg: TimeGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
     let url = format!(
         "https://api.clickup.com/api/v2/team/{}/time_entries",
         cfg.team_id
@@ -56,8 +55,7 @@ pub fn time_get(arg: TimeGet) -> Result<String, reqwest::Error> {
     }
 }
 
-pub fn task_get(arg: TaskGet) -> Result<String, reqwest::Error> {
-    let cfg = build_cfg();
+pub fn task_get(arg: TaskGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
     let url = format!(
         "https://api.clickup.com/api/v2/team/{}/time_entries",
         cfg.team_id
@@ -84,8 +82,23 @@ pub fn task_get(arg: TaskGet) -> Result<String, reqwest::Error> {
     }
 }
 
+// Gets the last time entry without handling the response 
+fn task_get_last_internal(cfg: &Cfg) -> Result<TimeEntry, reqwest::Error> {
+    let url = format!(
+        "https://api.clickup.com/api/v2/team/{}/time_entries",
+        cfg.team_id
+    );
+    let now = Local::now();
+    let start_ndt = now.checked_sub_days(Days::new(cfg.look_behind)).unwrap().date_naive().and_hms_opt(0, 0, 1).unwrap();
+    let start_ts = start_ndt.timestamp_millis();
+    let end = now.timestamp_millis();
+    let res = make_get_request(&cfg, start_ts, end, url)?.data.into_iter().last().unwrap(); // unsafe unwrap
+    Ok(res)
+} 
+
 #[allow(dead_code)]
-pub fn time_track(arg: TimeTrack) -> Result<String, reqwest::Error> {
+pub fn time_track(arg: TimeTrack, cfg: &Cfg) -> Result<String, reqwest::Error> {
+    let res = task_get_last_internal(cfg)?;
     todo!()
 }
 

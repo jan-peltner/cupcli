@@ -5,12 +5,14 @@ mod args;
 
 use std::env;
 
-use crate::api::{time_get, task_get, time_track};
 use crate::args::*;
+use crate::config::build_cfg;
+use crate::api::{time_get, task_get, time_track};
 
 // wrap main logic inside of run so we can print ArgErrors to stdout in readable format
-// if we return Result<(), ArgError> from main(), the error is printed in Debug format
+// if we return Result<(), ArgError> from main, the error is printed in Debug format
 fn run() -> Result<(), ArgError> {
+    let cfg = build_cfg();
     let args: Vec<String> = env::args().skip(1).collect();
     if args.len() != 2 {
         return Err(ArgError::ArgCount("Expects at least two arguments".to_string()))
@@ -23,7 +25,7 @@ fn run() -> Result<(), ArgError> {
                 "yesterday" => TimeGet::Yesterday,
                 _ => return Err(ArgError::ArgValue("Invalid second argument for first argument 'timeget'. Only 'today', 'week' and 'yesterday' are valid!".to_string())) 
             };
-            time_get(arg)
+            time_get(arg, &cfg)
         }
         "taskget" => {
             let arg: TaskGet = match args[1].as_str() {
@@ -33,7 +35,7 @@ fn run() -> Result<(), ArgError> {
                 },
                 _ => return Err(ArgError::ArgValue("Invalid second argument for first argument 'taskget'. Only 'last' and 'sprint' are valid!".to_string())) 
             };
-            task_get(arg) 
+            task_get(arg, &cfg) 
         }
         "timetrack" => {
             if args.len() != 3 {
@@ -52,13 +54,13 @@ fn run() -> Result<(), ArgError> {
                     duration
                 }
             };
-            time_track(arg)
+            time_track(arg, &cfg)
         }
         _ => return Err(ArgError::ArgValue("Invalid first argument! Only 'timeget', 'taskget' and 'timetrack' are valid!".to_string())) 
     };
     match res {
         Ok(res) => println!("{}", res),
-        Err(e) => eprintln!("An error occurred: {}", e)
+        Err(e) => eprintln!("[REQUEST ERROR] {}", e)
     };
     Ok(())
 }
