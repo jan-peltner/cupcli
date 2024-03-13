@@ -5,7 +5,7 @@ use crate::config::Cfg;
 use crate::utils::display::{fmt_task, fmt_time};
 use crate::utils::request::{make_get_request, make_post_request};
 use crate::utils::{calculate_time, TimeEntry};
-use chrono::{Datelike, Days, Local};
+use chrono::{Datelike, Days, Local, Timelike};
 pub fn time_get(arg: TimeGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
     let url = format!(
         "https://api.clickup.com/api/v2/team/{}/time_entries",
@@ -146,18 +146,18 @@ pub fn time_track(arg: TimeTrack, cfg: &Cfg) -> Result<String, reqwest::Error> {
        TimeTrackFirstArg::Last => {
         let time_entry = task_get_last_internal(cfg)?;
         if let Some(task) = time_entry.task {
-            let end = Local::now().timestamp_millis();
+            let end = Local::now().with_second(0).unwrap().timestamp_millis();
             let duration = match arg.duration {
                 0 => end - time_entry.end.parse::<i64>().unwrap(),
-                _ => arg.duration as i64 * 1000 * 60 // convert minutes to milliseconds
+                _ => arg.duration as i64 * 60 * 1000 // convert minutes to milliseconds
             };
             let start = end - duration;
             let mut body = HashMap::with_capacity(4);
             body.insert("start".to_string(), start.to_string());
+            body.insert("end".to_string(), end.to_string());
             body.insert("duration".to_string(), duration.to_string());
             body.insert("tid".to_string(), task.id);
             let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries", cfg.team_id);
-            // let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries?custom_task_ids=true&teamid={}", cfg.team_id, cfg.team_id);
             if make_post_request(cfg, url, body).is_ok() {
                Ok(format!("Tracked {} for task {}", fmt_time(duration as f32 / 1000f32 / 60f32 / 60f32), task.name))
             } else {
