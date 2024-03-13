@@ -24,7 +24,7 @@ pub enum TimeTrackFirstArg<'a> {
 #[derive(Debug)]
 pub enum ArgError {
    ArgCount(String),
-   ArgValue(String) 
+   ArgValue(String)
 }
 
 impl std::error::Error for ArgError {}
@@ -47,6 +47,6 @@ impl fmt::Display for ArgError {
 
 impl From<ParseIntError> for ArgError {
     fn from(e: ParseIntError) -> Self {
-        ArgError::ArgValue(e.to_string()) 
+        ArgError::ArgValue(e.to_string())
     }
 }

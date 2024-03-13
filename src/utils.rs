@@ -10,17 +10,18 @@ pub struct TimeEntries {
 #[derive(Debug, Deserialize)]
 pub struct TimeEntry {
     id: String,
-    task: Option<Task>,
+    pub task: Option<Task>,
     start: String,
-    end: String,
+    pub end: String,
     duration: String,
     task_url: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
-struct Task {
-    name: String,
-    status: Status 
+pub struct Task {
+    pub id: String,
+    pub name: String,
+    status: Status
 }
 
 #[derive(Debug, Deserialize)]
@@ -43,7 +44,7 @@ pub mod request {
     use reqwest::Method;
     use serde_json::{to_string, from_str};
 
-    pub fn make_get_request(cfg: &Cfg, start: i64, end: i64, url: String) -> Result<TimeEntries, reqwest::Error> { // building request 
+    pub fn make_get_request(cfg: &Cfg, start: i64, end: i64, url: String) -> Result<TimeEntries, reqwest::Error> { // building request
         let client = Client::new();
         let req = client
             .request(Method::GET, url)
@@ -55,7 +56,7 @@ pub mod request {
         query_params.push(("start_date".to_string(), format!("{}", start)));
         query_params.push(("end_date".to_string(), format!("{}", end)));
         let res = req.query(&query_params).send()?.text()?;
-        let time_entries: TimeEntries = from_str(&res).unwrap(); 
+        let time_entries: TimeEntries = from_str(&res).unwrap();
         Ok(time_entries)
     }
 
@@ -78,7 +79,7 @@ pub mod request {
 pub mod display {
     use chrono::DateTime;
     use chrono::Utc;
-    
+
     use super::TimeEntry;
     pub fn fmt_time(hours: f32) -> String {
         if hours.fract() == 0.0 {
@@ -88,7 +89,7 @@ pub mod display {
         }
     }
     pub fn fmt_task(entry: &TimeEntry) -> String {
-        let mut out = String::new(); 
+        let mut out = String::new();
         let last_entry_ts_ms = entry.end.parse::<i64>().unwrap();
         let last_entry_ts_s = last_entry_ts_ms / 1000;
         let last_entry_ts_ns = (last_entry_ts_ms % 1000) * 1_000_000;
@@ -106,7 +107,7 @@ pub mod display {
         }
 
         out.push_str(&format!("{: <12}", "[LAST ENTRY]"));
-        out.push_str(&format!(" {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32))); 
+        out.push_str(&format!(" {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32)));
         out.push_str(&format!("{: <12}", "[DURATION]"));
         out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
         out
