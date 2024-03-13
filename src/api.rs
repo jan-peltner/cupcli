@@ -146,16 +146,16 @@ pub fn time_track(arg: TimeTrack, cfg: &Cfg) -> Result<String, reqwest::Error> {
        TimeTrackFirstArg::Last => {
         let time_entry = task_get_last_internal(cfg)?;
         if let Some(task) = time_entry.task {
-            let start: i64 = time_entry.end.parse().unwrap();
-            let task_id = task.id;
+            let end = Local::now().timestamp_millis();
             let duration = match arg.duration {
-                0 => Local::now().timestamp_millis() - start,
+                0 => end - time_entry.end.parse::<i64>().unwrap(),
                 _ => arg.duration as i64 * 1000 * 60 // convert minutes to milliseconds
             };
+            let start = end - duration;
             let mut body = HashMap::with_capacity(4);
             body.insert("start".to_string(), start.to_string());
             body.insert("duration".to_string(), duration.to_string());
-            body.insert("tid".to_string(), task_id);
+            body.insert("tid".to_string(), task.id);
             let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries", cfg.team_id);
             // let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries?custom_task_ids=true&teamid={}", cfg.team_id, cfg.team_id);
             if make_post_request(cfg, url, body).is_ok() {
