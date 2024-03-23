@@ -162,7 +162,7 @@ pub fn time_track(arg: TimeTrack, cfg: &Cfg) -> Result<String, reqwest::Error> {
             body.insert("tid".to_string(), task.id);
             let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries", cfg.team_id);
             if make_post_request(cfg, url, body).is_ok() {
-               Ok(format!("Tracked {} for task {}", fmt_time(duration as f32 / 1000f32 / 60f32 / 60f32), task.name))
+               Ok(format!("{} Tracked {} for task {}",HOURGLASS , fmt_time(duration as f32 / 1000f32 / 60f32 / 60f32), task.name))
             } else {
                 panic!("Failed to track time for task {}", task.name)
             }
