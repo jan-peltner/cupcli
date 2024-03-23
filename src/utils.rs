@@ -81,6 +81,12 @@ pub mod display {
     use chrono::Utc;
 
     use super::TimeEntry;
+
+    pub const HOURGLASS: char = '\u{231B}';
+    const ALARM_CLOCK: char = '\u{23F0}';
+    const CHECKMARK: char = '\u{2705}';
+    const LABEL: char = '\u{1F4CA}';
+
     pub fn fmt_time(hours: f32) -> String {
         if hours.fract() == 0.0 {
             format!("{:.0}h", hours)
@@ -89,7 +95,7 @@ pub mod display {
         }
     }
     pub fn fmt_task(entry: &TimeEntry) -> String {
-        let mut out = String::new();
+        let mut out = String::with_capacity(64);
         let last_entry_ts_ms = entry.end.parse::<i64>().unwrap();
         let last_entry_ts_s = last_entry_ts_ms / 1000;
         let last_entry_ts_ns = (last_entry_ts_ms % 1000) * 1_000_000;
@@ -98,18 +104,18 @@ pub mod display {
         let last_tracked_in_mins = Utc::now().signed_duration_since(last_entry_dt).num_minutes();
 
         if let Some(task) = &entry.task {
-            out.push_str(&format!("{: <12}", "[TASK]"));
+            out.push_str(&format!("{: <14}", &format!("{} [TASK]", CHECKMARK)));
             out.push_str(&format!(" {} ({})\n", task.name, entry.task_url.as_ref().unwrap()));
-            out.push_str(&format!("{: <12}", "[STATUS]"));
+            out.push_str(&format!("{: <14}", &format!("{} [STATUS]", LABEL)));
             out.push_str(&format!(" {}\n", task.status.status));
         } else {
             out.push_str("No task associated with this entry\n");
         }
 
-        out.push_str(&format!("{: <12}", "[LAST ENTRY]"));
+        out.push_str(&format!("{: <14}", &format!("{} [LAST ENTRY]", ALARM_CLOCK)));
         out.push_str(&format!(" {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32)));
-        out.push_str(&format!("{: <12}", "[DURATION]"));
-        out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
+        out.push_str(&format!("{: <14}", &format!("{} [DURATION]", HOURGLASS)));
+        out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1400f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
         out
     }
 }

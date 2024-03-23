@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::args::*;
 use crate::config::Cfg;
-use crate::utils::display::{fmt_task, fmt_time};
+use crate::utils::display::{fmt_task, fmt_time, HOURGLASS};
 use crate::utils::request::{make_get_request, make_post_request};
 use crate::utils::{calculate_time, TimeEntry};
 use chrono::{Datelike, Days, Local, Timelike};
@@ -21,7 +21,8 @@ pub fn time_get(arg: TimeGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
                 Ok(res) => {
                     let res = calculate_time(res);
                     Ok(format!(
-                        "Tracked time today: {} out of {}",
+                        "{} Tracked time today: {} out of {}",
+                        HOURGLASS,
                         fmt_time(res),
                         fmt_time(cfg.daily_quota)
                     ))
@@ -45,7 +46,8 @@ pub fn time_get(arg: TimeGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
                 Ok(res) => {
                     let res = calculate_time(res);
                     Ok(format!(
-                        "Tracked time this week: {} out of {}",
+                        "{} Tracked time this week: {} out of {}",
+                        HOURGLASS,
                         fmt_time(res),
                         fmt_time(cfg.daily_quota * 5f32)
                     ))
@@ -71,7 +73,8 @@ pub fn time_get(arg: TimeGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
                 Ok(res) => {
                     let res = calculate_time(res);
                     Ok(format!(
-                        "Tracked time yesterday: {} out of {}",
+                        "{} Tracked time yesterday: {} out of {}",
+                        HOURGLASS,
                         fmt_time(res),
                         fmt_time(cfg.daily_quota)
                     ))
