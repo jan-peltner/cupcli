@@ -115,7 +115,7 @@ pub mod display {
         out.push_str(&format!("{: <14}", &format!("{} [LAST ENTRY]", ALARM_CLOCK)));
         out.push_str(&format!(" {} minutes ({}) ago\n", last_tracked_in_mins, fmt_time(last_tracked_in_mins as f32 / 60f32)));
         out.push_str(&format!("{: <14}", &format!("{} [DURATION]", HOURGLASS)));
-        out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1400f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
+        out.push_str(&format!(" {} minutes ({})\n", entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32, fmt_time(entry.duration.parse::<f32>().unwrap() / 1000f32 / 60f32 / 60f32)));
         out
     }
 }
