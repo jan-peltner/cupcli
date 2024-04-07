@@ -4,7 +4,7 @@ use crate::args::*;
 use crate::config::Cfg;
 use crate::utils::display::{fmt_task, fmt_time, HOURGLASS};
 use crate::utils::request::{make_get_request, make_post_request};
-use crate::utils::{calculate_time, TimeEntry};
+use crate::utils::{calculate_time, Task, TimeEntry};
 use chrono::{Datelike, Days, Local, Timelike};
 pub fn time_get(arg: TimeGet, cfg: &Cfg) -> Result<String, reqwest::Error> {
     let url = format!(
@@ -144,37 +144,66 @@ fn task_get_last_internal(cfg: &Cfg) -> Result<TimeEntry, reqwest::Error> {
 }
 
 #[allow(dead_code)]
-pub fn time_track(arg: TimeTrack, cfg: &Cfg) -> Result<String, reqwest::Error> {
-    match arg.mode {
-       TimeTrackFirstArg::Last => {
-        let time_entry = task_get_last_internal(cfg)?;
-        if let Some(task) = time_entry.task {
-            let end = Local::now().with_second(0).unwrap().timestamp_millis();
-            let duration = match arg.duration {
-                0 => end - time_entry.end.parse::<i64>().unwrap(),
-                _ => arg.duration as i64 * 60 * 1000 // convert minutes to milliseconds
-            };
+pub fn time_track(args: TimeTrack, cfg: &Cfg) -> Result<String, reqwest::Error> {
+    let mut body = HashMap::with_capacity(10);
+    let end = Local::now().with_second(0).unwrap().timestamp_millis();
+    let time_entry: TimeEntry;
+    let task: Task;
+    let mut duration: i64 = 0;
+    let mut description = "";
+    for flag in args.flags {
+       match flag {
+        TimeTrackFlag::Duration(dur) => duration = dur as i64 * 60 * 1000,
+        TimeTrackFlag::Description(desc) => description = desc
+       }
+    }
+    if !description.is_empty() {
+        body.insert("description".to_string(), description.to_string());
+    };
+    match args.mode {
+       TimeTrackMode::Last => {
+            time_entry = task_get_last_internal(cfg)?;
+            if let Some(_task) = time_entry.task {
+                task = _task.clone();
+                body.insert("tid".to_string(), _task.id);
+                duration = match duration {
+                    0 => end - time_entry.end.parse::<i64>().unwrap(),
+                    _ => duration as i64 * 60 * 1000 // convert minutes to milliseconds
+                };
+            } else {
+                panic!("No task id found for last time entry")
+            }
             let start = end - duration;
-            let mut body = HashMap::with_capacity(4);
             body.insert("start".to_string(), start.to_string());
             body.insert("end".to_string(), end.to_string());
             body.insert("duration".to_string(), duration.to_string());
-            body.insert("tid".to_string(), task.id);
             let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries", cfg.team_id);
             if make_post_request(cfg, url, body).is_ok() {
-               Ok(format!("{} Tracked {} for task {}",HOURGLASS , fmt_time(duration as f32 / 1000f32 / 60f32 / 60f32), task.name))
+               Ok(format!("{} Tracked {} for task {}", HOURGLASS, fmt_time(duration as f32 / 1000f32 / 60f32 / 60f32), task.name))
             } else {
                 panic!("Failed to track time for task {}", task.name)
             }
-        } else {
-            panic!("No task id found for last time entry")
-        }
-       }
-       TimeTrackFirstArg::TaskId(_id) => {
+       },
+       TimeTrackMode::Free => {
+            if duration == 0 {
+                panic!("Duration must be set for free time tracking")
+            };
+            let start = end - duration;
+            body.insert("start".to_string(), start.to_string());
+            body.insert("end".to_string(), end.to_string());
+            body.insert("duration".to_string(), duration.to_string());
+            let url = format!("https://api.clickup.com/api/v2/team/{}/time_entries", cfg.team_id);
+            if make_post_request(cfg, url, body).is_ok() {
+               Ok(format!("{} Tracked {}", HOURGLASS, fmt_time(duration as f32 / 1000f32 / 60f32 / 60f32)))
+            } else {
+                panic!("Failed to track time")
+            }
+       },
+       TimeTrackMode::TaskId(_id) => {
            todo!()
        }
+       }
     }
-}
 
 #[allow(dead_code)]
 pub fn tasks_list() -> Result<(), reqwest::Error> {

@@ -10,3 +10,4 @@ reqwest = { version = "0.11.22", features = ["blocking"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.108"
 chrono = "0.4.31"
+itertools = "0.12.1"

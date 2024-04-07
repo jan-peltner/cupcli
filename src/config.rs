@@ -46,10 +46,10 @@ fn parse_cfg() -> Vec<(String, String)> {
     let cfg_str = fs::read_to_string(format!("{}/.config/cupcli/cfg", home)).expect(
         r#"
         ---------------------------------------------------------------------------
-        Config file not found! 
+        Config file not found!
         Please create ~/.config/cupcli/cfg and add the following:
         cu_auth={YOUR_CLICKUP_AUTH_TOKEN}
-        teamid={YOUR_TEAM_ID} 
+        teamid={YOUR_TEAM_ID}
         ---------------------------------------------------------------------------
         "#,
     );

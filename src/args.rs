@@ -1,5 +1,8 @@
 use std::fmt;
 use std::num::ParseIntError;
+
+use crate::utils::display::ERROR;
+
 pub enum TimeGet {
     Today,
     Week,
@@ -11,17 +14,26 @@ pub enum TaskGet {
     Sprint,
 }
 
+#[derive(Debug)]
 pub struct TimeTrack<'a> {
-    pub mode: TimeTrackFirstArg<'a>,
-    pub duration: u32,
-}
-
-pub enum TimeTrackFirstArg<'a> {
-    Last,
-    TaskId(&'a str),
+    pub mode: TimeTrackMode<'a>,
+    pub flags: Vec<TimeTrackFlag<'a>>,
 }
 
 #[derive(Debug)]
+pub enum TimeTrackFlag<'a> {
+    Description(&'a str),
+    Duration(u32)
+}
+
+#[derive(Debug, PartialEq)]
+pub enum TimeTrackMode<'a> {
+    Last,
+    Free,
+    TaskId(&'a str),
+}
+
+#[derive(Debug, Clone)]
 pub enum ArgError {
    ArgCount(String),
    ArgValue(String)
@@ -31,7 +43,7 @@ impl std::error::Error for ArgError {}
 
 impl fmt::Display for ArgError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut prefix = String::from("[ARGUMENT ERROR] ");
+        let mut prefix = String::from(format!("{} [ARGUMENT ERROR] ", ERROR));
         match self {
             ArgError::ArgCount(msg) => {
                 prefix.push_str("Invalid number of arguments: ");

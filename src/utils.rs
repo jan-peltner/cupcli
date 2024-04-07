@@ -17,14 +17,14 @@ pub struct TimeEntry {
     task_url: Option<String>
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Task {
     pub id: String,
     pub name: String,
     status: Status
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct Status {
     status: String
 }
@@ -83,9 +83,11 @@ pub mod display {
     use super::TimeEntry;
 
     pub const HOURGLASS: char = '\u{231B}';
+    pub const ERROR: char = '\u{1F6AB}';
     const ALARM_CLOCK: char = '\u{23F0}';
     const CHECKMARK: char = '\u{2705}';
     const LABEL: char = '\u{1F4CA}';
+
 
     pub fn fmt_time(hours: f32) -> String {
         if hours.fract() == 0.0 {
